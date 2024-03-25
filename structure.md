@@ -1,0 +1,25 @@
+# Project structure
+
+- controller
+  - FeeController (get/post)
+- service
+  - FeeService
+    - IFeeService (interface)
+  - WeatherService
+- model
+  - BaseWeatherConditions
+    - WeatherConditions (db)
+    - XMLWeatherConditions (xml)
+  - Region (enum of WeatherStations)
+  - Vehicle (enum)
+  - WeatherPhenomenon (enum)
+  - WeatherStation
+- repository
+  - WeatherConditionsRepository
+  - RegionFeeRepository (RBF)
+  - AirTemperatureFeeRepository (ATEF)
+  - WindSpeedFeeRepository (WSEF)
+  - WeatherPhenomenonFeeRepository (WPEF)
+- job
+  - WeatherJob
+- Fujitsu24Application
