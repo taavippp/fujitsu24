@@ -1,5 +1,9 @@
 package com.taavippp.fujitsu24.model;
 
+/*
+* This enum represents ALL of the different weather phenomenons that the https://ilmateenistus.ee API
+* can return. The variable "name" exists to match the phenomenon in the way the API request would return it.
+* */
 public enum WeatherPhenomenon {
     CLEAR("Clear"),
     FEW_CLOUDS("Few clouds"),

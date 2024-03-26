@@ -1,5 +1,7 @@
-package com.taavippp.fujitsu24.model;
+package com.taavippp.fujitsu24.model.WeatherConditions;
 
+import com.taavippp.fujitsu24.model.WeatherPhenomenon;
+import com.taavippp.fujitsu24.model.WeatherStation;
 import lombok.Getter;
 import org.jdom2.Element;
 import java.util.Arrays;

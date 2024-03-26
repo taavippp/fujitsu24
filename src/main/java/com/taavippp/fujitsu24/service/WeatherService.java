@@ -1,8 +1,8 @@
 package com.taavippp.fujitsu24.service;
 
 import com.taavippp.fujitsu24.model.Region;
-import com.taavippp.fujitsu24.model.WeatherConditions;
-import com.taavippp.fujitsu24.model.XMLWeatherConditions;
+import com.taavippp.fujitsu24.model.WeatherConditions.WeatherConditions;
+import com.taavippp.fujitsu24.model.WeatherConditions.XMLWeatherConditions;
 import com.taavippp.fujitsu24.repository.WeatherConditionsRepository;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -23,11 +23,17 @@ import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.stream.Stream;
 
+/*
+* This class contains all the different methods that are used for fetching the latest weather data.
+* */
 @Service
 public class WeatherService {
     private static final String weatherURL = "https://www.ilmateenistus.ee/ilma_andmed/xml/observations.php";
     private static final Logger logger = LoggerFactory.getLogger(WeatherService.class);
 
+    /*
+    * This method simply sends a request to the weather data API and returns the string body of the response.
+    * */
     public String requestRawWeatherData() throws URISyntaxException {
         HttpRequest req = HttpRequest.newBuilder()
                 .uri(new URI(weatherURL))
@@ -47,6 +53,11 @@ public class WeatherService {
         }
     }
 
+    /*
+    * This method is intended to parse the string body from the above method.
+    * It parses the XML content within, then converts it into instances of the WeatherConditions class
+    * and filters them so only the valid region data remains.
+    * */
     public Stream<XMLWeatherConditions> deserializeXMLWeatherData(String data) throws IOException, JDOMException {
         SAXBuilder saxBuilder = new SAXBuilder();
         Document document = saxBuilder.build(
@@ -66,6 +77,10 @@ public class WeatherService {
         return validWeatherConditions;
     }
 
+    /*
+    * This method takes the valid weather conditions from the above method
+    * and inserts them to the database, along with the timestamp when this was done.
+    * */
     public void saveWeatherData(Stream<XMLWeatherConditions> data, WeatherConditionsRepository weatherConditionsRepository) {
         long timestamp = ZonedDateTime.now().toEpochSecond();
         data.forEach(

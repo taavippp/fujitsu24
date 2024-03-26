@@ -1,6 +1,6 @@
 package com.taavippp.fujitsu24.job;
 
-import com.taavippp.fujitsu24.model.XMLWeatherConditions;
+import com.taavippp.fujitsu24.model.WeatherConditions.XMLWeatherConditions;
 import com.taavippp.fujitsu24.repository.WeatherConditionsRepository;
 import com.taavippp.fujitsu24.service.WeatherService;
 import org.jdom2.JDOMException;
@@ -14,6 +14,11 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.stream.Stream;
 
+/*
+* This class performs the required CronJob:
+* once every hour, on the 15th minute, the newest weather data is fetched from the Internet.
+* The weather data gets parsed, deserialized, filtered and is then inserted into the DB.
+* */
 @Component
 public class WeatherJob {
     private final WeatherService weatherService = new WeatherService();

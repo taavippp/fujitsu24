@@ -1,5 +1,6 @@
-package com.taavippp.fujitsu24.model;
+package com.taavippp.fujitsu24.model.WeatherConditions;
 
+import com.taavippp.fujitsu24.model.WeatherPhenomenon;
 import jakarta.persistence.MappedSuperclass;
 import lombok.Getter;
 
