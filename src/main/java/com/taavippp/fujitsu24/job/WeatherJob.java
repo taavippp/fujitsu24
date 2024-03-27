@@ -32,5 +32,6 @@ public class WeatherJob {
         String data = weatherService.requestRawWeatherData();
         Stream<XMLWeatherConditions> xmlData = weatherService.deserializeXMLWeatherData(data);
         weatherService.saveWeatherData(xmlData, weatherConditionsRepository);
+        logger.info("Weather job completed");
     }
 }

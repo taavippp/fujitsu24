@@ -8,13 +8,18 @@ import java.util.Arrays;
 
 @Getter
 public class XMLWeatherConditions extends BaseWeatherConditions {
-    WeatherStation weatherStation;
+    private final WeatherStation weatherStation;
 
     public XMLWeatherConditions(Element element) {
         String name = element.getChildTextTrim("name");
+        String sWmoCode = element.getChildTextTrim("wmocode");
+        if (sWmoCode.isEmpty()) {
+            this.weatherStation = new WeatherStation(name, -1);
+            return;
+        }
+        int wmoCode = Integer.parseInt(sWmoCode);
+        this.weatherStation = new WeatherStation(name, wmoCode);
         try {
-            int wmoCode = Integer.parseInt(element.getChildTextTrim("wmocode"));
-            this.weatherStation = new WeatherStation(name, wmoCode);
             this.airTemperature = Float.parseFloat(element.getChildTextTrim("airtemperature"));
             this.windSpeed = Float.parseFloat(element.getChildTextTrim("windspeed"));
             String swp = element.getChildTextTrim("phenomenon");
@@ -24,8 +29,6 @@ public class XMLWeatherConditions extends BaseWeatherConditions {
                             this.weatherPhenomenon = wp;
                         }
                     });
-        } catch (NumberFormatException err) {
-            this.weatherStation = new WeatherStation(name, -1);
-        }
+        } catch (NumberFormatException ignored) {}
     }
 }

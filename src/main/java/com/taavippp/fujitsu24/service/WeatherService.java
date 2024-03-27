@@ -3,6 +3,7 @@ package com.taavippp.fujitsu24.service;
 import com.taavippp.fujitsu24.model.Region;
 import com.taavippp.fujitsu24.model.WeatherConditions.WeatherConditions;
 import com.taavippp.fujitsu24.model.WeatherConditions.XMLWeatherConditions;
+import com.taavippp.fujitsu24.model.WeatherStation;
 import com.taavippp.fujitsu24.repository.WeatherConditionsRepository;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -71,7 +72,11 @@ public class WeatherService {
         Stream<XMLWeatherConditions> validWeatherConditions = xmlWeatherConditions
                 .filter(
                         wc -> Arrays.stream(Region.values()).anyMatch(
-                                region -> region.weatherStation.getName().equals(wc.getWeatherStation().getName())
+                                region -> {
+                                    WeatherStation station = region.weatherStation;
+                                    return station.getName().equals(wc.getWeatherStation().getName()) &&
+                                            station.getWmoCode() == wc.getWeatherStation().getWmoCode();
+                                }
                         )
                 );
         return validWeatherConditions;
