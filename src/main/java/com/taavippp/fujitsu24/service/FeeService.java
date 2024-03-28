@@ -1,9 +1,15 @@
 package com.taavippp.fujitsu24.service;
 
+import com.taavippp.fujitsu24.model.ExtraFeeCategory;
 import com.taavippp.fujitsu24.model.Fee.ExtraFee;
 import com.taavippp.fujitsu24.model.Fee.RegionalFee;
+import com.taavippp.fujitsu24.model.Region;
+import com.taavippp.fujitsu24.model.Vehicle;
+import com.taavippp.fujitsu24.model.WeatherConditions.WeatherConditions;
+import com.taavippp.fujitsu24.model.WeatherPhenomenon;
 import com.taavippp.fujitsu24.repository.ExtraFeeRepository;
 import com.taavippp.fujitsu24.repository.RegionalFeeRepository;
+import com.taavippp.fujitsu24.repository.WeatherConditionsRepository;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -19,16 +25,67 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.util.List;
+import java.util.Optional;
 
 /*
 * This class contains every method related to inserting the constant initial fees from
 * their respective .xml files.
 * */
 @Service
-public class InitialFeeService {
-    private static final Logger logger = LoggerFactory.getLogger(InitialFeeService.class);
+public class FeeService implements IFeeService {
+    private static final Logger logger = LoggerFactory.getLogger(FeeService.class);
     private static final String initialRegionalFeesFilename = "InitialRegionalFees.xml";
     private static final String initialExtraFeesFilename = "InitialExtraFees.xml";
+
+    @Override
+    public int calculateTotalFee(Region region, Vehicle vehicle, long timestamp,
+                                 RegionalFeeRepository regionalFeeRepository, ExtraFeeRepository extraFeeRepository) {
+        return 0;
+    }
+
+    @Override
+    public int calculateRegionFee(Region region, RegionalFeeRepository repository) {
+        return repository.findCostByRegion(region);
+    }
+
+    @Override
+    public int calculateExtraFee(Region region, Vehicle vehicle, long timestamp,
+                                 WeatherConditionsRepository weatherConditionsRepository, ExtraFeeRepository extraFeeRepository) {
+        Optional<WeatherConditions> optionalWC = weatherConditionsRepository.findOneByWeatherStationAndTimestamp(
+                region.station,
+                region.wmoCode,
+                timestamp
+        );
+        if (optionalWC.isEmpty()) {
+            return 0;
+        }
+        WeatherConditions weatherConditions = optionalWC.get();
+
+        int totalExtraFee = 0;
+        float airTemperature = weatherConditions.getAirTemperature();
+        float windSpeed = weatherConditions.getWindSpeed();
+        WeatherPhenomenon weatherPhenomenon = weatherConditions.getWeatherPhenomenon();
+        if (airTemperature < 0F) {
+            ExtraFeeCategory ATEFCategory;
+            if (airTemperature < -10F) {
+                ATEFCategory = ExtraFeeCategory.ATEF_VERY_COLD;
+            } else {
+                ATEFCategory = ExtraFeeCategory.ATEF_COLD;
+            }
+            totalExtraFee += extraFeeRepository.findCostByCategoryAndVehicle(ATEFCategory, vehicle);
+        }
+        return totalExtraFee;
+    }
+
+    @Override
+    public void setRegionFeeCost(Region region, int cost) {
+
+    }
+
+    @Override
+    public void setExtraFeeCost(ExtraFeeCategory category, Vehicle vehicle, int cost) {
+
+    }
 
     private String readFeeFile(String filename) throws URISyntaxException, IOException {
         URL resource = getClass().getClassLoader().getResource(filename);
@@ -50,14 +107,14 @@ public class InitialFeeService {
     * JDOMException is thrown when the content of InitialRegionalFees.xml is invalid.
     * The other two exceptions are not expected to throw.
     * */
-    public List<RegionalFee> readInitialRegionalFeesFromXML() throws IOException, JDOMException, URISyntaxException {
+    @Override
+    public List<RegionalFee> readRegionalFeesFromFile() throws JDOMException, URISyntaxException, IOException {
         Element root = getXMLRootElementFromData(readFeeFile(initialRegionalFeesFilename));
-        List<RegionalFee> fees = root
+        return root
                 .getChildren()
                 .stream()
                 .map(RegionalFee::new)
                 .toList();
-        return fees;
     }
 
     /*
@@ -66,22 +123,23 @@ public class InitialFeeService {
      * JDOMException is thrown when the content of InitialExtraFees.xml is invalid.
      * The other two exceptions are not expected to throw.
      * */
-    public List<ExtraFee> readInitialExtraFeesFromXML() throws IOException, JDOMException, URISyntaxException {
+    @Override
+    public List<ExtraFee> readExtraFeesFromFile() throws IOException, JDOMException, URISyntaxException {
         Element root = getXMLRootElementFromData(readFeeFile(initialExtraFeesFilename));
-        List<ExtraFee> fees = root
+        return root
                 .getChildren()
                 .stream()
                 .map(ExtraFee::new)
                 .toList();
-        return fees;
     }
 
     /*
     * This method is intended to take the list returned by readInitialRegionalFeesFromXML
     * and insert the list's contents into the DB table.
     * */
-    public void saveInitialRegionalFeesToRepository(List<RegionalFee> fees, RegionalFeeRepository regionalFeeRepository) {
-        regionalFeeRepository.saveAllAndFlush(fees);
+    @Override
+    public void saveRegionalFeesToRepository(List<RegionalFee> fees, RegionalFeeRepository repository) {
+        repository.saveAllAndFlush(fees);
         logger.info("Inserted initial regional fees to database");
     }
 
@@ -89,8 +147,9 @@ public class InitialFeeService {
      * This method is intended to take the list returned by readInitialExtraFeesFromXML
      * and insert the list's contents into the DB table.
      * */
-    public void saveInitialExtraFeesToRepository(List<ExtraFee> fees, ExtraFeeRepository extraFeeRepository) {
-        extraFeeRepository.saveAllAndFlush(fees);
+    @Override
+    public void saveExtraFeesToRepository(List<ExtraFee> fees, ExtraFeeRepository repository) {
+        repository.saveAllAndFlush(fees);
         logger.info("Inserted initial extra fees to database");
     }
 }

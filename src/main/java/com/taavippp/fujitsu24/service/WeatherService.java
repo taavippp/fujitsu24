@@ -2,8 +2,7 @@ package com.taavippp.fujitsu24.service;
 
 import com.taavippp.fujitsu24.model.Region;
 import com.taavippp.fujitsu24.model.WeatherConditions.WeatherConditions;
-import com.taavippp.fujitsu24.model.WeatherConditions.XMLWeatherConditions;
-import com.taavippp.fujitsu24.model.WeatherStation;
+import com.taavippp.fujitsu24.model.WeatherConditions.WeatherConditionsFactory;
 import com.taavippp.fujitsu24.repository.WeatherConditionsRepository;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -22,6 +21,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Stream;
 
 /*
@@ -59,47 +59,34 @@ public class WeatherService {
     * It parses the XML content within, then converts it into instances of the WeatherConditions class
     * and filters them so only the valid region data remains.
     * */
-    public Stream<XMLWeatherConditions> deserializeXMLWeatherData(String data) throws IOException, JDOMException {
+    public Stream<WeatherConditions> deserializeXMLWeatherData(String data) throws IOException, JDOMException {
         SAXBuilder saxBuilder = new SAXBuilder();
         Document document = saxBuilder.build(
                 new StringReader(data)
         );
         Element root = document.getRootElement();
-        Stream<XMLWeatherConditions> xmlWeatherConditions = root
+        Stream<WeatherConditions> weatherConditionsStream = root
                 .getChildren()
                 .stream()
-                .map(XMLWeatherConditions::new);
-        Stream<XMLWeatherConditions> validWeatherConditions = xmlWeatherConditions
+                .map(WeatherConditionsFactory::createFromXML);
+        return weatherConditionsStream
                 .filter(
                         wc -> Arrays.stream(Region.values()).anyMatch(
-                                region -> {
-                                    WeatherStation station = region.weatherStation;
-                                    return station.getName().equals(wc.getWeatherStation().getName()) &&
-                                            station.getWmoCode() == wc.getWeatherStation().getWmoCode();
-                                }
+                                region -> region.station.equals(wc.getStation()) &&
+                                        region.wmoCode == wc.getWmoCode()
                         )
                 );
-        return validWeatherConditions;
     }
 
     /*
     * This method takes the valid weather conditions from the above method
     * and inserts them to the database, along with the timestamp when this was done.
     * */
-    public void saveWeatherData(Stream<XMLWeatherConditions> data, WeatherConditionsRepository weatherConditionsRepository) {
+    public void saveWeatherData(Stream<WeatherConditions> data, WeatherConditionsRepository weatherConditionsRepository) {
         long timestamp = ZonedDateTime.now().toEpochSecond();
-        data.forEach(
-                xwc -> {
-                    WeatherConditions wc = new WeatherConditions(
-                            xwc.getWeatherStation(),
-                            xwc.getAirTemperature(),
-                            xwc.getWindSpeed(),
-                            xwc.getWeatherPhenomenon(),
-                            timestamp
-                    );
-                    weatherConditionsRepository.save(wc);
-                }
-        );
-        weatherConditionsRepository.flush();
+        List<WeatherConditions> weatherConditionsList = data.peek(
+                wc -> wc.setTimestamp(timestamp)
+        ).toList();
+        weatherConditionsRepository.saveAllAndFlush(weatherConditionsList);
     }
 }

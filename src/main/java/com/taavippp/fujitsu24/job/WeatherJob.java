@@ -1,6 +1,7 @@
 package com.taavippp.fujitsu24.job;
 
-import com.taavippp.fujitsu24.model.WeatherConditions.XMLWeatherConditions;
+import com.taavippp.fujitsu24.config.WeatherJobConfig;
+import com.taavippp.fujitsu24.model.WeatherConditions.WeatherConditions;
 import com.taavippp.fujitsu24.repository.WeatherConditionsRepository;
 import com.taavippp.fujitsu24.service.WeatherService;
 import org.jdom2.JDOMException;
@@ -25,13 +26,12 @@ public class WeatherJob {
     private static final Logger logger = LoggerFactory.getLogger(WeatherJob.class);
     @Autowired WeatherConditionsRepository weatherConditionsRepository;
 
-    //@Scheduled(cron = "15 * * * *") // Production
-    @Scheduled(cron = "15 * * * * *") // Development
+    @Scheduled(cron = WeatherJobConfig.cronExpression)
     private void updateWeatherConditions() throws URISyntaxException, IOException, JDOMException {
         logger.info("Weather job started");
         String data = weatherService.requestRawWeatherData();
-        Stream<XMLWeatherConditions> xmlData = weatherService.deserializeXMLWeatherData(data);
-        weatherService.saveWeatherData(xmlData, weatherConditionsRepository);
+        Stream<WeatherConditions> weatherConditionsStream = weatherService.deserializeXMLWeatherData(data);
+        weatherService.saveWeatherData(weatherConditionsStream, weatherConditionsRepository);
         logger.info("Weather job completed");
     }
 }
