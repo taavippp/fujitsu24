@@ -1,16 +1,20 @@
 package com.taavippp.fujitsu24.config;
 
 import com.cronutils.model.Cron;
+import com.cronutils.model.CronType;
 import com.cronutils.model.definition.CronDefinition;
 import com.cronutils.model.definition.CronDefinitionBuilder;
 import com.cronutils.model.time.ExecutionTime;
 import com.cronutils.parser.CronParser;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
+@Component
 public class WeatherJobConfig {
     private static final String timezone = "GMT+2";
 
@@ -24,21 +28,20 @@ public class WeatherJobConfig {
             .withHours().and()
             .withDayOfMonth().and()
             .withMonth().and()
-            .withDayOfWeek().and()
-            .instance();
+            .withDayOfWeek().and().instance();
     private static final CronParser cronParser = new CronParser(cronDefinition);
 
-    public static long getLatestExecutionBefore(long timestamp) {
+    public static long getLastExecutionBefore(long timestamp) {
         Cron cron = cronParser.parse(cronExpression);
         ExecutionTime executionTime = ExecutionTime.forCron(cron);
 
         Instant instant = Instant.ofEpochSecond(timestamp);
         ZonedDateTime time = ZonedDateTime.ofInstant(instant, ZoneId.of(timezone));
 
-        Optional<ZonedDateTime> optionalLastExecution = executionTime.lastExecution(time);
-        if (optionalLastExecution.isEmpty()) {
+        Optional<ZonedDateTime> lastExecution = executionTime.lastExecution(time);
+        if (lastExecution.isEmpty()) {
             return 0;
         }
-        return optionalLastExecution.get().toEpochSecond();
+        return lastExecution.get().toEpochSecond();
     }
 }

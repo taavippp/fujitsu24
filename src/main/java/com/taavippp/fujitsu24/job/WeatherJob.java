@@ -4,15 +4,18 @@ import com.taavippp.fujitsu24.config.WeatherJobConfig;
 import com.taavippp.fujitsu24.model.WeatherConditions.WeatherConditions;
 import com.taavippp.fujitsu24.repository.WeatherConditionsRepository;
 import com.taavippp.fujitsu24.service.WeatherService;
+import jakarta.annotation.PostConstruct;
 import org.jdom2.JDOMException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.time.Instant;
 import java.util.stream.Stream;
 
 /*
@@ -22,16 +25,17 @@ import java.util.stream.Stream;
 * */
 @Component
 public class WeatherJob {
-    private final WeatherService weatherService = new WeatherService();
+    private @Autowired WeatherService weatherService;
     private static final Logger logger = LoggerFactory.getLogger(WeatherJob.class);
-    @Autowired WeatherConditionsRepository weatherConditionsRepository;
+
 
     @Scheduled(cron = WeatherJobConfig.cronExpression)
     private void updateWeatherConditions() throws URISyntaxException, IOException, JDOMException {
         logger.info("Weather job started");
+        long timestamp = Instant.now().getEpochSecond();
         String data = weatherService.requestRawWeatherData();
         Stream<WeatherConditions> weatherConditionsStream = weatherService.deserializeXMLWeatherData(data);
-        weatherService.saveWeatherData(weatherConditionsStream, weatherConditionsRepository);
+        weatherService.saveWeatherData(weatherConditionsStream, timestamp);
         logger.info("Weather job completed");
     }
 }

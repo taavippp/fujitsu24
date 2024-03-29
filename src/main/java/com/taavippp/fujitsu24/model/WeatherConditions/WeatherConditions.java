@@ -11,7 +11,7 @@ import lombok.*;
 * This class represents the weather conditions that are fetched from the Ilmateenistus.ee API and inserted into the DB.
 * */
 @Entity
-@Getter @RequiredArgsConstructor
+@Getter @RequiredArgsConstructor @AllArgsConstructor @NoArgsConstructor
 public class WeatherConditions {
     private @Id @GeneratedValue(strategy = GenerationType.IDENTITY) Long id;
     private @NonNull String station;

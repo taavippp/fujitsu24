@@ -6,13 +6,16 @@ import com.taavippp.fujitsu24.model.Fee.RegionalFee;
 import com.taavippp.fujitsu24.model.Region;
 import com.taavippp.fujitsu24.model.Vehicle;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 /*
 * Different ExtraFee instances are stored in the database table that this interface creates.
 * The table will be called "EXTRA_FEE"
 * */
+@Repository("extra-fee-repository")
 public interface ExtraFeeRepository extends JpaRepository<ExtraFee, Long> {
     @Query(value =
             "SELECT COST " +
@@ -22,4 +25,18 @@ public interface ExtraFeeRepository extends JpaRepository<ExtraFee, Long> {
             nativeQuery = true
     )
     int findCostByCategoryAndVehicle(@Param("category") ExtraFeeCategory category, @Param("vehicle") Vehicle vehicle);
+
+    @Modifying
+    @Query(value =
+            "UPDATE EXTRA_FEE EF " +
+            "SET EF.COST = :cost " +
+            "WHERE EF.CATEGORY = :category " +
+            "AND EF.VEHICLE = :vehicle",
+            nativeQuery = true
+    )
+    void updateCostByCategoryAndVehicle(
+            @Param("cost") int cost,
+            @Param("category") ExtraFeeCategory category,
+            @Param("vehicle") Vehicle vehicle
+    );
 }

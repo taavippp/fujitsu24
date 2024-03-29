@@ -4,12 +4,15 @@ import com.taavippp.fujitsu24.model.Region;
 import com.taavippp.fujitsu24.model.WeatherConditions.WeatherConditions;
 import com.taavippp.fujitsu24.model.WeatherConditions.WeatherConditionsFactory;
 import com.taavippp.fujitsu24.repository.WeatherConditionsRepository;
+import jakarta.annotation.PostConstruct;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -27,10 +30,11 @@ import java.util.stream.Stream;
 /*
 * This class contains all the different methods that are used for fetching the latest weather data.
 * */
-@Service
+@Service("weather-service")
 public class WeatherService {
     private static final String weatherURL = "https://www.ilmateenistus.ee/ilma_andmed/xml/observations.php";
     private static final Logger logger = LoggerFactory.getLogger(WeatherService.class);
+    private @Autowired WeatherConditionsRepository weatherConditionsRepository;
 
     /*
     * This method simply sends a request to the weather data API and returns the string body of the response.
@@ -82,8 +86,7 @@ public class WeatherService {
     * This method takes the valid weather conditions from the above method
     * and inserts them to the database, along with the timestamp when this was done.
     * */
-    public void saveWeatherData(Stream<WeatherConditions> data, WeatherConditionsRepository weatherConditionsRepository) {
-        long timestamp = ZonedDateTime.now().toEpochSecond();
+    public void saveWeatherData(Stream<WeatherConditions> data, long timestamp) {
         List<WeatherConditions> weatherConditionsList = data.peek(
                 wc -> wc.setTimestamp(timestamp)
         ).toList();
