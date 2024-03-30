@@ -11,6 +11,9 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
 
+/*
+* Due to the size of the FeeService class, this interface was made to ensure every necessary method is created.
+* */
 public interface IFeeService {
     int calculateTotalFee(Region region, Vehicle vehicle, long timestamp) throws ForbiddenVehicleTypeException;
     void setRegionFee(int cost, Region region, Vehicle vehicle);

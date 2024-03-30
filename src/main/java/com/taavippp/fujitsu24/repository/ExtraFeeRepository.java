@@ -18,6 +18,7 @@ import org.springframework.stereotype.Repository;
 * */
 @Repository("extra-fee-repository")
 public interface ExtraFeeRepository extends JpaRepository<ExtraFee, Long> {
+    // Returns the fee from the database depending on the fee category and vehicle chosen.
     @Query(value =
             "SELECT COST " +
             "FROM EXTRA_FEE EF " +
@@ -27,6 +28,7 @@ public interface ExtraFeeRepository extends JpaRepository<ExtraFee, Long> {
     )
     int findCostByCategoryAndVehicle(@Param("category") ExtraFeeCategory category, @Param("vehicle") Vehicle vehicle);
 
+    // Updates an extra fee. Cost cannot be below 0.
     @Modifying @Transactional
     @Query(value =
             "UPDATE EXTRA_FEE EF " +

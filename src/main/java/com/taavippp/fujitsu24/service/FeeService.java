@@ -1,5 +1,6 @@
 package com.taavippp.fujitsu24.service;
 
+import com.taavippp.fujitsu24.config.WeatherJobConfig;
 import com.taavippp.fujitsu24.model.*;
 import com.taavippp.fujitsu24.model.Fee.ExtraFee;
 import com.taavippp.fujitsu24.model.Fee.RegionalFee;
@@ -28,8 +29,10 @@ import java.util.Optional;
 import java.util.Set;
 
 /*
-* This class contains every method related to inserting the constant initial fees from
-* their respective .xml files.
+* This class contains everything related to dealing with fees:
+* calculating the total fee as requested by the user,
+* setting the regional/extra fee,
+* inserting initial regional/extra fees.
 * */
 @Service("fee-service")
 public class FeeService implements IFeeService {
@@ -62,6 +65,10 @@ public class FeeService implements IFeeService {
                     WeatherPhenomenon.THUNDERSTORM))
     );
 
+    /* This method calls the two fee calculation methods and adds their result together.
+    * The exception is thrown if something wrong was found during the calculation of the extra fee, AKA
+    * one cannot choose that vehicle due to rough weather.
+    * */
     @Override
     public int calculateTotalFee(Region region, Vehicle vehicle, long timestamp) throws ForbiddenVehicleTypeException {
         int regionFee = calculateRegionFee(region, vehicle);
@@ -79,11 +86,14 @@ public class FeeService implements IFeeService {
                 region.wmoCode,
                 timestamp
         );
+
         if (wc.isEmpty()) {
+            logger.error("WeatherConditions from DB is empty");
             return 0;
         }
 
         WeatherConditions weatherConditions = wc.get();
+
         float airTemperature = weatherConditions.getAirTemperature();
         float windSpeed = weatherConditions.getWindSpeed();
         WeatherPhenomenon weatherPhenomenon = weatherConditions.getWeatherPhenomenon();
@@ -139,14 +149,16 @@ public class FeeService implements IFeeService {
     }
 
     private boolean isFeeCostValid(int cost) {
-        return cost < 0;
+        return cost >= 0;
     }
 
+    // Sets the regional fee according to user input.
     @Override
     public void setRegionFee(int cost, Region region, Vehicle vehicle) {
         regionalFeeRepository.updateCostByRegionAndVehicle(cost, region, vehicle);
     }
 
+    // Sets the extra fee according to user input.
     @Override
     public void setExtraFee(int cost, ExtraFeeCategory category, Vehicle vehicle) {
         extraFeeRepository.updateCostByCategoryAndVehicle(cost, category, vehicle);

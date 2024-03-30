@@ -16,6 +16,7 @@ import org.springframework.stereotype.Repository;
  * */
 @Repository("regional-fee-repository")
 public interface RegionalFeeRepository extends JpaRepository<RegionalFee, Long> {
+    // This method finds the base regional cost by region.
     @Query(value =
             "SELECT COST " +
             "FROM REGIONAL_FEE RF " +
@@ -25,6 +26,7 @@ public interface RegionalFeeRepository extends JpaRepository<RegionalFee, Long> 
     )
     int findCostByRegion(@Param("region") Region region, @Param("vehicle") Vehicle vehicle);
 
+    // For updating/setting the regional fee. Values below 0 won't be accepted.
     @Modifying @Transactional
     @Query(value =
             "UPDATE REGIONAL_FEE RF " +

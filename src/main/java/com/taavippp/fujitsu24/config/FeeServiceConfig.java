@@ -2,15 +2,10 @@ package com.taavippp.fujitsu24.config;
 
 import com.taavippp.fujitsu24.model.Fee.ExtraFee;
 import com.taavippp.fujitsu24.model.Fee.RegionalFee;
-import com.taavippp.fujitsu24.repository.ExtraFeeRepository;
-import com.taavippp.fujitsu24.repository.RegionalFeeRepository;
-import com.taavippp.fujitsu24.repository.WeatherConditionsRepository;
 import com.taavippp.fujitsu24.service.FeeService;
 import jakarta.annotation.PostConstruct;
 import org.jdom2.JDOMException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;

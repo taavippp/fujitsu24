@@ -12,6 +12,7 @@ import java.util.Optional;
 * The table will be called "WEATHER_CONDITIONS"
 * */
 public interface WeatherConditionsRepository extends JpaRepository<WeatherConditions, Long> {
+    // This method will find one WeatherConditions instance from the DB that matches the timestamp, station and wmo code.
     @Query(value =
             "SELECT * " +
             "FROM WEATHER_CONDITIONS WC " +

@@ -1,11 +1,9 @@
 package com.taavippp.fujitsu24.controller;
 
 import com.taavippp.fujitsu24.config.WeatherJobConfig;
-import com.taavippp.fujitsu24.model.ExtraFeeCategory;
-import com.taavippp.fujitsu24.model.ForbiddenVehicleTypeException;
-import com.taavippp.fujitsu24.model.Region;
-import com.taavippp.fujitsu24.model.Vehicle;
+import com.taavippp.fujitsu24.model.*;
 import com.taavippp.fujitsu24.service.FeeService;
+import jakarta.websocket.OnError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,18 +11,41 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 
 import java.time.Instant;
 
+/*
+* Every method of this class takes user input from various endpoints, validates them and transforms them and then lets the FeeService
+* class operate with them.
+* The available endpoints are:
+* /fee (GET request)
+* /fee/regional (POST request)
+* /fee/extra (POST request)
+* By default, the project is hosted at localhost:8080, so for example, one would send a request to the /fee endpoint
+* by using the url http://localhost:8080/fee
+* */
 @RestController
 @RequestMapping(FeeController.path)
 public class FeeController {
-    public static final String path = "/fee";
+    protected static final String path = "/fee";
     private @Autowired FeeService feeService;
     private final Logger logger = LoggerFactory.getLogger(FeeController.class);
 
     private final int EURO = 100;
 
+    // This method is used when GET request parameters are missing from the request.
+    @ExceptionHandler({MissingServletRequestParameterException.class})
+    public ResponseEntity<String> handleMissingArguments() {
+        return new ResponseEntity<>(new InvalidUserInputException().getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
+    /* http://localhost:8080/fee GET
+    * Returns the delivery fee in euros depending on the following request parameters:
+    * city - string, value from {tallinn, tartu, parnu} (can use any case)
+    * vehicle - string, value from {car, scooter, bike} (can use any case)
+    * timestamp - optional integer, must be epoch time
+    * */
     @GetMapping()
     public ResponseEntity<String> getDeliveryFee(
             @RequestParam(name = "city") String regionStr,
@@ -45,7 +66,7 @@ public class FeeController {
             }
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>(
-                    "Invalid input",
+                    new InvalidUserInputException().getMessage(),
                     HttpStatus.BAD_REQUEST
             );
         }
@@ -73,7 +94,13 @@ public class FeeController {
         }
     }
 
-    @PostMapping(value = "/regional", consumes = MediaType.APPLICATION_JSON_VALUE)
+    /* http://localhost:8080/fee/regional POST
+     * Sets the regional fee of a vehicle depending on the following parameters:
+     * cost - integer number, must be in euro cents (100 means 1.00 EUR)
+     * city - string, value from {tallinn, tartu, parnu} (can use any case)
+     * vehicle - string, value from {car, scooter, bike} (can use any case)
+     * */
+    @PostMapping(value = "/regional")
     public ResponseEntity<String> setRegionalFee(
             @RequestParam(name = "cost") String costStr,
             @RequestParam(name = "city") String regionStr,
@@ -91,13 +118,16 @@ public class FeeController {
             vehicle = Vehicle.valueOf(vehicleStr.toUpperCase());
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>(
-                    "Invalid input",
+                    new InvalidUserInputException().getMessage(),
                     HttpStatus.BAD_REQUEST
             );
         }
 
         if (cost < 0) {
-            return new ResponseEntity<>("Invalid input", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(
+                    new InvalidUserInputException().getMessage(),
+                    HttpStatus.BAD_REQUEST
+            );
         }
         
         feeService.setRegionFee(cost, region, vehicle);
@@ -107,7 +137,14 @@ public class FeeController {
         );
     }
 
-    @PostMapping(value = "/extra", consumes = MediaType.APPLICATION_JSON_VALUE)
+    /* http://localhost:8080/fee/regional POST
+     * Sets the regional fee of a vehicle depending on the following parameters:
+     * cost - integer number, must be in euro cents (100 means 1.00 EUR)
+     * category - string, value from ExtraFeeCategory class (can use any case, underscores (_) must
+     *      be included in the name)
+     * vehicle - string, value from {car, scooter, bike} (can use any case)
+     * */
+    @PostMapping(value = "/extra")
     public ResponseEntity<String> setExtraFee(
             @RequestParam(name = "cost") String costStr,
             @RequestParam(name = "category") String categoryStr,
@@ -125,7 +162,7 @@ public class FeeController {
             vehicle = Vehicle.valueOf(vehicleStr.toUpperCase());
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>(
-                    "Invalid input",
+                    new InvalidUserInputException().getMessage(),
                     HttpStatus.BAD_REQUEST
             );
         }

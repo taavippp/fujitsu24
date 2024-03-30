@@ -30,6 +30,9 @@ public class WeatherJobConfig {
             .withDayOfWeek().and().instance();
     private static final CronParser cronParser = new CronParser(cronDefinition);
 
+    /*
+    * Returns the last time the CronJob ran (or should've ran) before the provided epoch timestamp.
+    * */
     public static long getLastExecutionBefore(long timestamp) {
         Cron cron = cronParser.parse(cronExpression);
         ExecutionTime executionTime = ExecutionTime.forCron(cron);

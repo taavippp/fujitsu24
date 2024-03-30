@@ -2,14 +2,11 @@ package com.taavippp.fujitsu24.job;
 
 import com.taavippp.fujitsu24.config.WeatherJobConfig;
 import com.taavippp.fujitsu24.model.WeatherConditions.WeatherConditions;
-import com.taavippp.fujitsu24.repository.WeatherConditionsRepository;
 import com.taavippp.fujitsu24.service.WeatherService;
-import jakarta.annotation.PostConstruct;
 import org.jdom2.JDOMException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
