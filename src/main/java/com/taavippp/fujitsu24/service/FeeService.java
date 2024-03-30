@@ -22,8 +22,10 @@ import java.io.StringReader;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 /*
 * This class contains every method related to inserting the constant initial fees from
@@ -129,6 +131,9 @@ public class FeeService implements IFeeService {
             if (weatherPhenomena.contains(weatherPhenomenon)) {
                 wpefCategory = category;
             }
+        }
+        if (wpefCategory == null) {
+            return 0;
         }
         return extraFeeRepository.findCostByCategoryAndVehicle(wpefCategory, vehicle);
     }

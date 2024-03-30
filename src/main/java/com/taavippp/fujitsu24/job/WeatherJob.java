@@ -28,7 +28,6 @@ public class WeatherJob {
     private @Autowired WeatherService weatherService;
     private static final Logger logger = LoggerFactory.getLogger(WeatherJob.class);
 
-
     @Scheduled(cron = WeatherJobConfig.cronExpression)
     private void updateWeatherConditions() throws URISyntaxException, IOException, JDOMException {
         logger.info("Weather job started");

@@ -17,7 +17,6 @@ import java.util.Optional;
 @Component
 public class WeatherJobConfig {
     private static final String timezone = "GMT+2";
-
     private static final String devCron = "0 * * * * *";
     private static final String prodCron = "0 15 * * * *";
     public static final String cronExpression = devCron;

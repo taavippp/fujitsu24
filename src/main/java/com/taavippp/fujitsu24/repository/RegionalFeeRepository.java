@@ -3,6 +3,7 @@ package com.taavippp.fujitsu24.repository;
 import com.taavippp.fujitsu24.model.Fee.RegionalFee;
 import com.taavippp.fujitsu24.model.Region;
 import com.taavippp.fujitsu24.model.Vehicle;
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -24,7 +25,7 @@ public interface RegionalFeeRepository extends JpaRepository<RegionalFee, Long> 
     )
     int findCostByRegion(@Param("region") Region region, @Param("vehicle") Vehicle vehicle);
 
-    @Modifying
+    @Modifying @Transactional
     @Query(value =
             "UPDATE REGIONAL_FEE RF " +
             "SET RF.COST = :cost " +
