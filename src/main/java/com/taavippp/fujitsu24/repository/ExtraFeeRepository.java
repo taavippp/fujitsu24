@@ -2,8 +2,6 @@ package com.taavippp.fujitsu24.repository;
 
 import com.taavippp.fujitsu24.model.ExtraFeeCategory;
 import com.taavippp.fujitsu24.model.Fee.ExtraFee;
-import com.taavippp.fujitsu24.model.Fee.RegionalFee;
-import com.taavippp.fujitsu24.model.Region;
 import com.taavippp.fujitsu24.model.Vehicle;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;

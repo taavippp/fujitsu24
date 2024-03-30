@@ -1,6 +1,5 @@
 package com.taavippp.fujitsu24.service;
 
-import com.taavippp.fujitsu24.config.WeatherJobConfig;
 import com.taavippp.fujitsu24.model.*;
 import com.taavippp.fujitsu24.model.Fee.ExtraFee;
 import com.taavippp.fujitsu24.model.Fee.RegionalFee;

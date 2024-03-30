@@ -1,10 +1,11 @@
 package com.taavippp.fujitsu24.service;
 
-import com.taavippp.fujitsu24.model.*;
+import com.taavippp.fujitsu24.model.ExtraFeeCategory;
 import com.taavippp.fujitsu24.model.Fee.ExtraFee;
 import com.taavippp.fujitsu24.model.Fee.RegionalFee;
-import com.taavippp.fujitsu24.repository.ExtraFeeRepository;
-import com.taavippp.fujitsu24.repository.RegionalFeeRepository;
+import com.taavippp.fujitsu24.model.ForbiddenVehicleTypeException;
+import com.taavippp.fujitsu24.model.Region;
+import com.taavippp.fujitsu24.model.Vehicle;
 import org.jdom2.JDOMException;
 
 import java.io.IOException;
